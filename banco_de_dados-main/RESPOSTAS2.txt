@@ -1,0 +1,74 @@
+RESPOSTAS SLIDE 24 - Aula 3
+
+-- 1) Nome e CPF dos médicos que também são pacientes do hospital
+SELECT M.nome, M.cpf
+FROM Medicos M
+JOIN Pacientes P ON M.cpf = P.cpf;
+
+-- 2) Pares (código, nome) de funcionários e de médicos que residem na mesma cidade
+SELECT F.codigo, F.nome
+FROM Funcionarios F
+JOIN Medicos M ON F.cidade = M.cidade
+UNION
+SELECT M.codigo, M.nome
+FROM Funcionarios F
+JOIN Medicos M ON F.cidade = M.cidade;
+
+-- 3) Código e nome dos pacientes com consulta marcada para horários após às 14 horas
+SELECT P.cpf, P.nome
+FROM Pacientes P
+JOIN Consultas C ON P.cpf = C.cpf_paciente
+WHERE C.horario > '14:00:00';
+
+-- 4) Número e andar dos ambulatórios utilizados por médicos ortopedistas
+SELECT DISTINCT A.numero, A.andar
+FROM Ambulatorios A
+JOIN Medicos M ON A.numero = M.codigo_ambulatório
+WHERE M.especialidade = 'Ortopedia';
+
+-- 5) Nome e CPF dos pacientes que têm consultas marcadas entre os dias 14 e 16 de junho de 2006
+SELECT DISTINCT P.nome, P.cpf
+FROM Pacientes P
+JOIN Consultas C ON P.cpf = C.cpf_paciente
+WHERE C.data_consulta BETWEEN '2006-06-14' AND '2006-06-16';
+
+-- 6) Nome e idade dos médicos que têm consulta com a paciente Ana
+SELECT DISTINCT M.nome, M.idade
+FROM Medicos M
+JOIN Consultas C ON M.codigo = C.codigo_medico
+JOIN Pacientes P ON C.cpf_paciente = P.cpf
+WHERE P.nome = 'Ana';
+
+-- 7) Código e nome dos médicos que atendem no mesmo ambulatório do médico Pedro e que possuem consultas marcadas para dia 14/06/2024
+SELECT DISTINCT M.codigo, M.nome
+FROM Medicos M
+JOIN Consultas C ON M.codigo = C.codigo_medico
+WHERE M.codigo_ambulatório = (SELECT codigo_ambulatório FROM Medicos WHERE nome = 'Pedro')
+AND C.data_consulta = '2024-06-14';
+
+-- 8) Nome, CPF e idade dos pacientes que têm consultas marcadas com ortopedistas para dias anteriores ao dia 16
+SELECT DISTINCT P.nome, P.cpf, P.idade
+FROM Pacientes P
+JOIN Consultas C ON P.cpf = C.cpf_paciente
+JOIN Medicos M ON C.codigo_medico = M.codigo
+WHERE M.especialidade = 'Ortopedia'
+AND C.data_consulta < '2024-06-16';
+
+-- 9) Nome e salário dos funcionários que moram na mesma cidade do funcionário Carlos e possuem salário superior ao dele
+SELECT F.nome, F.salario
+FROM Funcionarios F
+WHERE F.cidade = (SELECT cidade FROM Funcionarios WHERE nome = 'Carlos')
+AND F.salario > (SELECT salario FROM Funcionarios WHERE nome = 'Carlos');
+
+-- 10) Dados de todos os ambulatórios e, para aqueles ambulatórios onde médicos dão atendimento, exibir também os seus códigos e nomes
+SELECT A.*, M.codigo AS codigo_medico, M.nome AS nome_medico
+FROM Ambulatorios A
+LEFT JOIN Medicos M ON A.numero = M.codigo_ambulatório;
+
+-- 11) CPF e nome de todos os médicos e, para aqueles médicos com consultas marcadas, exibir os CPFs e nomes dos seus pacientes e as datas das consultas
+SELECT M.cpf AS cpf_medico, M.nome AS nome_medico, P.cpf AS cpf_paciente, P.nome AS nome_paciente, C.data_consulta
+FROM Medicos M
+LEFT JOIN Consultas C ON M.codigo = C.codigo_medico
+LEFT JOIN Pacientes P ON C.cpf_paciente = P.cpf
+ORDER BY M.nome;
+
