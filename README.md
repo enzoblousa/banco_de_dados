@@ -40,6 +40,6 @@ Fique à vontade para entrar em contato comigo:
 
 Email: enzoblousa@gmail.com
 
-LinkedIn: linkedin.com/in/enzo-spíndola-1b747431a
+LinkedIn: https://www.linkedin.com/in/enzo-sp%C3%ADndola-1b747431a/ 
 
 GitHub: github.com/enzoblousa
