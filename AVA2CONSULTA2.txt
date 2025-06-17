@@ -1,0 +1,129 @@
+-- 1. Exibir nome do participante, nome do evento e status_descricao baseado no status_pagamento
+SELECT 
+    p.nome AS nome_participante,
+    e.nome AS nome_evento,
+    CASE 
+        WHEN p.status_pagamento = 'pago' THEN 'PG'
+        WHEN p.status_pagamento = 'pendente' THEN 'PD'
+        WHEN p.status_pagamento = 'cancelado' THEN 'C'
+        ELSE 'D'
+    END AS status_descricao
+FROM 
+    Participantes p
+JOIN 
+    Eventos e ON p.id_evento = e.id;
+
+-- 2. Exibir nome do evento, datas e classificacao_evento baseado na duração
+SELECT 
+    nome AS nome_evento,
+    data_inicio,
+    data_fim,
+    CASE 
+        WHEN data_inicio = data_fim THEN 'Evento de 1 dia'
+        WHEN DATEDIFF(data_fim, data_inicio) <= 3 THEN 'Evento de Curta Duração'
+        ELSE 'Evento de Longa Duração'
+    END AS classificacao_evento
+FROM 
+    Eventos;
+
+-- 3. Listar participantes com tipo_participante baseado no ano de inscrição
+SELECT 
+    nome AS nome_participante,
+    CASE 
+        WHEN YEAR(data_inscricao) < 2024 THEN 'Veterano'
+        ELSE 'Novo'
+    END AS tipo_participante
+FROM 
+    Participantes;
+
+-- 4. Retornar organizadores com classificação de função baseada no cargo
+SELECT 
+    nome AS nome_organizador,
+    cargo,
+    CASE 
+        WHEN cargo = 'Diretor' THEN 'Gestor Principal'
+        WHEN cargo IN ('Coordenador', 'Supervisor') THEN 'Coordenação'
+        ELSE 'Apoio'
+    END AS funcao
+FROM 
+    Organizadores;
+
+-- 5. Exibir participantes com prioridade_contato baseada nos dados de contato
+SELECT 
+    nome AS nome_participante,
+    CASE 
+        WHEN telefone IS NOT NULL THEN 'WhatsApp'
+        WHEN email IS NOT NULL THEN 'E-mail'
+        ELSE 'Sem contato disponível'
+    END AS prioridade_contato
+FROM 
+    Participantes;
+
+-- 6. Listar eventos com classificacao_tipo baseada no tipo de evento
+SELECT 
+    nome AS nome_evento,
+    tipo,
+    CASE 
+        WHEN tipo IN ('Campeonato', 'Corrida', 'Torneio') THEN 'Competição'
+        WHEN tipo IN ('Oficina', 'Curso', 'Palestra') THEN 'Formativo'
+        ELSE 'Outro'
+    END AS classificacao_tipo
+FROM 
+    Eventos;
+
+-- Exercícios de HAVING
+
+-- 1. Eventos com mais de 1 pendência de pagamento
+SELECT 
+    e.nome AS nome_evento,
+    COUNT(p.id) AS qtd_pendencias
+FROM 
+    Eventos e
+JOIN 
+    Participantes p ON e.id = p.id_evento
+WHERE 
+    p.status_pagamento = 'pendente'
+GROUP BY 
+    e.nome
+HAVING 
+    COUNT(p.id) > 1;
+
+-- 2. Organizadores que organizaram mais de 1 evento
+SELECT 
+    o.nome AS nome_organizador,
+    COUNT(eo.id_evento) AS qtd_eventos
+FROM 
+    Organizadores o
+JOIN 
+    Eventos_Organizadores eo ON o.id = eo.id_organizador
+GROUP BY 
+    o.nome
+HAVING 
+    COUNT(eo.id_evento) > 1;
+
+-- 3. Participantes com mais de uma inscrição
+SELECT 
+    p.nome AS nome_participante,
+    COUNT(pe.id_evento) AS qtd_inscricoes
+FROM 
+    Participantes p
+JOIN 
+    Participantes_Eventos pe ON p.id = pe.id_participante
+GROUP BY 
+    p.nome
+HAVING 
+    COUNT(pe.id_evento) > 1;
+
+-- 4. Eventos com mais da metade dos inscritos com pagamento pendente
+SELECT 
+    e.nome AS nome_evento,
+    SUM(CASE WHEN p.status_pagamento = 'pendente' THEN 1 ELSE 0 END) AS qtd_pendencias,
+    COUNT(p.id) AS total_inscritos
+FROM 
+    Eventos e
+JOIN 
+    Participantes p ON e.id = p.id_evento
+GROUP BY 
+    e.nome
+HAVING 
+    SUM(CASE WHEN p.status_pagamento = 'pendente' THEN 1 ELSE 0 END) > COUNT(p.id) / 2;
